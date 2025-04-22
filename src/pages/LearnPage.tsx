@@ -1,21 +1,34 @@
-
 import React from 'react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import CodeSubmission from '../components/CodeSubmission';
 
 const LearnPage: React.FC = () => {
+  const currentProblem = {
+    title: "Implement Bubble Sort",
+    description: "Write a function that implements the bubble sort algorithm. The function should take an array of numbers as input and return the sorted array.",
+    example: `Input: [64, 34, 25, 12, 22, 11, 90]
+Output: [11, 12, 22, 25, 34, 64, 90]
+
+function bubbleSort(arr) {
+  // Your code here
+}`
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
       
-      <main className="flex-1">
+      <main className="flex-1 bg-gray-50">
         <div className="container mx-auto px-4 md:px-6 py-12">
           <div className="text-center mb-12">
             <h1 className="text-4xl font-bold mb-4">Learning Center</h1>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              Explore tutorials, explanations, and interactive lessons on data structures and algorithms.
+              Practice implementing algorithms and get instant feedback on your solutions.
             </p>
           </div>
+          
+          <CodeSubmission problem={currentProblem} />
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="wizard-card p-6">
