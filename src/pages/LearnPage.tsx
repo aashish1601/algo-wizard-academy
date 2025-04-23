@@ -1,18 +1,24 @@
+
 import React from 'react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import CodeSubmission from '../components/CodeSubmission';
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Trophy, Star, Clock, Award } from 'lucide-react';
 
 const LearnPage: React.FC = () => {
   const currentProblem = {
     title: "Implement Bubble Sort",
-    description: "Write a function that implements the bubble sort algorithm. The function should take an array of numbers as input and return the sorted array.",
+    description: "Write a function that implements the bubble sort algorithm. The function should take an array of numbers as input and return the sorted array. Your algorithm will be tested for correctness and performance using AWS Lambda.",
     example: `Input: [64, 34, 25, 12, 22, 11, 90]
 Output: [11, 12, 22, 25, 34, 64, 90]
 
 function bubbleSort(arr) {
   // Your code here
-}`
+  // Make sure to return the sorted array
+}`,
+    expectedOutput: [11, 12, 22, 25, 34, 64, 90],
+    timeLimit: 500 // milliseconds
   };
 
   return (
@@ -24,11 +30,118 @@ function bubbleSort(arr) {
           <div className="text-center mb-12">
             <h1 className="text-4xl font-bold mb-4">Learning Center</h1>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              Practice implementing algorithms and get instant feedback on your solutions.
+              Practice implementing algorithms and get instant feedback on your solutions powered by AWS.
             </p>
           </div>
           
-          <CodeSubmission problem={currentProblem} />
+          <div className="mb-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="col-span-2">
+              <CodeSubmission problem={currentProblem} />
+            </div>
+            
+            <div className="space-y-6">
+              <div className="bg-white rounded-lg shadow-lg p-6">
+                <h3 className="text-lg font-bold mb-3 flex items-center">
+                  <Trophy className="mr-2 h-5 w-5 text-amber-500" />
+                  Leaderboard
+                </h3>
+                <p className="text-sm text-gray-600 mb-4">
+                  Top performers for this challenge
+                </p>
+                
+                <div className="space-y-3">
+                  {[
+                    { name: "Alex", score: 98, time: 240 },
+                    { name: "Taylor", score: 95, time: 283 },
+                    { name: "Jamie", score: 92, time: 310 }
+                  ].map((user, i) => (
+                    <div key={i} className="flex items-center justify-between border-b pb-2">
+                      <div className="flex items-center gap-2">
+                        <span className="text-gray-500 font-bold">{i+1}</span>
+                        <Avatar className="h-6 w-6">
+                          <AvatarFallback>{user.name[0]}</AvatarFallback>
+                        </Avatar>
+                        <span className="font-medium">{user.name}</span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <span className="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded">
+                          {user.score}/100
+                        </span>
+                        <span className="text-xs text-gray-500">
+                          {user.time}ms
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                
+                <div className="mt-4 text-center">
+                  <span className="text-sm text-wizard-accent hover:underline cursor-pointer">
+                    View full leaderboard →
+                  </span>
+                </div>
+              </div>
+              
+              <div className="bg-white rounded-lg shadow-lg p-6">
+                <h3 className="text-lg font-bold mb-3 flex items-center">
+                  <Clock className="mr-2 h-5 w-5 text-indigo-500" />
+                  Daily Challenge
+                </h3>
+                <p className="text-sm text-gray-600 mb-4">
+                  New challenge unlocks in 5:45:32
+                </p>
+                
+                <div className="bg-indigo-50 rounded-lg p-3 border border-indigo-100">
+                  <h4 className="font-medium text-sm">Implement Quick Sort</h4>
+                  <div className="flex items-center justify-between mt-2">
+                    <span className="text-xs text-gray-600">Difficulty: Hard</span>
+                    <div className="flex">
+                      <Star className="h-3 w-3 text-amber-400" />
+                      <Star className="h-3 w-3 text-amber-400" />
+                      <Star className="h-3 w-3 text-amber-400" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="bg-white rounded-lg shadow-lg p-6">
+                <h3 className="text-lg font-bold mb-3 flex items-center">
+                  <Award className="mr-2 h-5 w-5 text-emerald-500" />
+                  Your Achievements
+                </h3>
+                <p className="text-sm text-gray-600 mb-4">
+                  Login with Amazon Cognito to track your progress
+                </p>
+                
+                <div className="grid grid-cols-2 gap-2">
+                  {[
+                    { name: "Algorithm Apprentice", desc: "Solve 5 problems", unlocked: true },
+                    { name: "Speed Demon", desc: "Solve under 200ms", unlocked: true },
+                    { name: "Code Ninja", desc: "Perfect score", unlocked: false },
+                    { name: "Consistency King", desc: "7-day streak", unlocked: false }
+                  ].map((badge, i) => (
+                    <div 
+                      key={i} 
+                      className={`border rounded-lg p-2 text-center ${
+                        badge.unlocked ? 'bg-emerald-50 border-emerald-200' : 'bg-gray-50 border-gray-200 opacity-60'
+                      }`}
+                    >
+                      <div className="text-xs font-semibold mb-1">
+                        {badge.name}
+                      </div>
+                      <div className="text-[10px] text-gray-600">
+                        {badge.desc}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                
+                <button className="w-full mt-4 text-sm bg-blue-500 hover:bg-blue-600 text-white py-2 rounded-md">
+                  Sign in to Sync Progress
+                </button>
+              </div>
+            </div>
+          </div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="wizard-card p-6">
