@@ -1,10 +1,12 @@
-
 import React, { useState } from 'react';
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Loader2, CheckCircle2, AlertTriangle } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
+import SubmissionLog, { Submission } from "./SubmissionLog";
+import NotificationsPanel, { Notification } from "./NotificationsPanel";
 
 interface CodeSubmissionProps {
   problem: {
@@ -26,9 +28,12 @@ const CodeSubmission: React.FC<CodeSubmissionProps> = ({ problem }) => {
     memory?: number;
   } | null>(null);
   const { toast } = useToast();
+  const { user } = useAuth();
+
+  const [submissions, setSubmissions] = useState<Submission[]>([]);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
 
   const simulateAWSLambdaExecution = (code: string) => {
-    // This simulates what would happen in AWS Lambda
     return new Promise<{
       status: 'success' | 'error';
       message: string;
@@ -36,7 +41,6 @@ const CodeSubmission: React.FC<CodeSubmissionProps> = ({ problem }) => {
       memory?: number;
     }>((resolve) => {
       setTimeout(() => {
-        // Simple test for bubble sort implementation
         if (code.includes('function bubbleSort') && 
             code.includes('for') && 
             code.includes('if') && 
@@ -44,8 +48,8 @@ const CodeSubmission: React.FC<CodeSubmissionProps> = ({ problem }) => {
           resolve({
             status: 'success',
             message: 'All test cases passed!',
-            executionTime: Math.random() * 100 + 50, // Simulating execution time (ms)
-            memory: Math.random() * 5 + 1, // Simulating memory usage (MB)
+            executionTime: Math.random() * 100 + 50,
+            memory: Math.random() * 5 + 1,
           });
         } else {
           resolve({
@@ -53,11 +57,20 @@ const CodeSubmission: React.FC<CodeSubmissionProps> = ({ problem }) => {
             message: 'Your solution failed to pass some test cases. Make sure you implement a proper bubbleSort function.',
           });
         }
-      }, 2000); // Simulate network delay
+      }, 2000);
     });
   };
 
   const handleSubmit = async () => {
+    if (!user) {
+      toast({
+        title: "Must be Logged In",
+        description: "Please login with Amazon Cognito to submit your solution.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (!code.trim()) {
       toast({
         title: "Empty Submission",
@@ -71,27 +84,41 @@ const CodeSubmission: React.FC<CodeSubmissionProps> = ({ problem }) => {
     setResult(null);
 
     try {
-      // In a real implementation, this would call AWS Lambda via API Gateway
       const executionResult = await simulateAWSLambdaExecution(code);
-      
+
       setResult(executionResult);
-      
-      // Simulate storing results in DynamoDB and sending SNS notification
+
+      const timestamp = new Date().toLocaleString();
+      setSubmissions(subs => [
+        ...subs,
+        {
+          id: Date.now(),
+          code,
+          status: executionResult.status,
+          executionTime: executionResult.executionTime,
+          memory: executionResult.memory,
+          time: timestamp,
+        }
+      ]);
+
+      setNotifications(notifs => [
+        ...notifs,
+        {
+          id: Date.now(),
+          message:
+            executionResult.status === "success"
+              ? "🎉 Submission succeeded! Check your result."
+              : "❗ Submission failed: " + executionResult.message,
+          type: executionResult.status,
+          time: timestamp,
+        }
+      ]);
+
       if (executionResult.status === 'success') {
         toast({
           title: "Solution Submitted Successfully",
           description: "Your code has been executed and results are available!",
         });
-        
-        console.log("Would store in DynamoDB:", {
-          userId: "user123", // This would come from Amazon Cognito in real implementation
-          problemId: problem.title,
-          code: code,
-          result: executionResult,
-          timestamp: new Date().toISOString()
-        });
-        
-        console.log("Would send SNS notification about successful submission");
       } else {
         toast({
           title: "Solution Needs Improvement",
@@ -111,8 +138,12 @@ const CodeSubmission: React.FC<CodeSubmissionProps> = ({ problem }) => {
     }
   };
 
+  const handleClearNotifications = () => setNotifications([]);
+
   return (
     <div className="w-full max-w-4xl mx-auto p-6 space-y-6">
+      <NotificationsPanel notifications={notifications} onClear={handleClearNotifications} />
+      <SubmissionLog submissions={submissions} />
       <div className="bg-white rounded-lg shadow-lg p-6">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-xl font-bold">{problem.title}</h3>
@@ -120,14 +151,11 @@ const CodeSubmission: React.FC<CodeSubmissionProps> = ({ problem }) => {
             AWS Lambda Powered
           </div>
         </div>
-        
         <p className="text-gray-600 mb-4">{problem.description}</p>
-        
         <div className="bg-gray-50 p-4 rounded-md mb-6">
           <h4 className="text-sm font-semibold mb-2">Example:</h4>
           <pre className="bg-gray-100 p-3 rounded text-sm">{problem.example}</pre>
         </div>
-
         <div className="space-y-4">
           <div>
             <label htmlFor="code" className="block text-sm font-medium mb-2 flex items-center justify-between">
@@ -147,7 +175,6 @@ const CodeSubmission: React.FC<CodeSubmissionProps> = ({ problem }) => {
               disabled={isSubmitting}
             />
           </div>
-          
           {result && (
             <Alert variant={result.status === 'success' ? 'default' : 'destructive'} className="animate-in fade-in">
               <div className="flex items-center gap-2">
@@ -177,12 +204,11 @@ const CodeSubmission: React.FC<CodeSubmissionProps> = ({ problem }) => {
               </AlertDescription>
             </Alert>
           )}
-          
           <div className="flex justify-between items-center">
             <div className="text-sm text-gray-500">
-              Powered by AWS Lambda & DynamoDB
+              Powered by AWS Lambda & DynamoDB & SNS (Simulated)
             </div>
-            <Button 
+            <Button
               onClick={handleSubmit}
               className="bg-wizard-accent hover:bg-wizard-accent/90"
               disabled={isSubmitting}
@@ -199,7 +225,6 @@ const CodeSubmission: React.FC<CodeSubmissionProps> = ({ problem }) => {
           </div>
         </div>
       </div>
-      
       <div className="bg-white rounded-lg shadow-lg p-6">
         <h3 className="text-lg font-bold mb-3">AWS Integration Overview</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
