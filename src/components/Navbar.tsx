@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
+import AuthDialog from './AuthDialog';
 
 const Navbar: React.FC = () => {
   return (
@@ -19,7 +20,13 @@ const Navbar: React.FC = () => {
       </div>
       
       <div>
-        <button className="wizard-btn">Get Started</button>
+        <AuthDialog
+          trigger={
+            <button className="wizard-btn" type="button">
+              Get Started
+            </button>
+          }
+        />
       </div>
     </nav>
   );
