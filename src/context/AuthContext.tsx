@@ -124,29 +124,37 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setIsLoading(false);
     }
   };
-
-  const signup = async (email: string, password: string, username: string) => {
-    try {
-      setIsLoading(true);
-      const { isSignUpComplete, nextStep } = await signUp({
-        username: email,
-        password,
-        options: {
-          userAttributes: {
-            email,
-            preferred_username: username,
-          },
-          autoSignIn: true // enables auto sign-in after user is confirmed
-        }
-      });
-      return { isComplete: isSignUpComplete, nextStep };
-    } catch (error) {
-      console.error('Error signing up:', error);
-      throw error;
-    } finally {
-      setIsLoading(false);
-    }
-  };
+const signup = async (email: string, password: string, username: string) => {
+  try {
+    setIsLoading(true);
+    console.log('Attempting signup with:', { email, username });
+    
+    const { isSignUpComplete, nextStep } = await signUp({
+      username: email,
+      password,
+      options: {
+        userAttributes: {
+          email,
+          preferred_username: username,
+        },
+        autoSignIn: true
+      }
+    });
+    
+    console.log('Sign up response:', { isSignUpComplete, nextStep });
+    return { isComplete: isSignUpComplete, nextStep };
+  } catch (error: any) {
+    console.error('Detailed signup error:', error);
+    // Extract more specific error information
+    const errorMessage = error.message || 'Unknown error occurred during signup';
+    const errorName = error.name || 'Error';
+    console.error(`Error type: ${errorName}, Message: ${errorMessage}`);
+    
+    throw error;
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   const logout = async () => {
     try {
