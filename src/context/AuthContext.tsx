@@ -1,6 +1,6 @@
 
 import React, { createContext, useContext, useState } from "react";
-import { Auth } from 'aws-amplify';
+import { fetchAuthSession, signIn, signOut, signUp } from 'aws-amplify/auth';
 import { Amplify } from 'aws-amplify';
 
 // Configure Amplify
@@ -39,10 +39,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const login = async (email: string, password: string) => {
     try {
-      const cognitoUser = await Auth.signIn(email, password);
+      const { username, attributes } = await signIn({ username: email, password });
       setUser({
-        username: cognitoUser.username,
-        email: cognitoUser.attributes?.email || email
+        username: username || attributes?.preferred_username || email,
+        email: attributes?.email || email
       });
     } catch (error) {
       console.error('Error signing in:', error);
@@ -52,12 +52,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signup = async (email: string, password: string, username: string) => {
     try {
-      await Auth.signUp({
+      await signUp({
         username: email,
         password,
-        attributes: {
-          email,
-          preferred_username: username,
+        options: {
+          userAttributes: {
+            email,
+            preferred_username: username,
+          }
         }
       });
     } catch (error) {
@@ -68,7 +70,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const logout = async () => {
     try {
-      await Auth.signOut();
+      await signOut();
       setUser(null);
     } catch (error) {
       console.error('Error signing out:', error);
