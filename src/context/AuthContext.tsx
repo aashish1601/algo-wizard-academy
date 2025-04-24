@@ -1,6 +1,7 @@
 
 import React, { createContext, useContext, useState } from "react";
-import { Amplify, Auth } from '@aws-amplify/auth';
+import { Auth } from '@aws-amplify/auth';
+import { Amplify } from 'aws-amplify';
 
 // Configure Amplify
 Amplify.configure({
