@@ -1,14 +1,15 @@
 
 import React, { createContext, useContext, useState } from "react";
-import { Auth } from '@aws-amplify/auth';
+import { Auth } from 'aws-amplify';
 import { Amplify } from 'aws-amplify';
 
 // Configure Amplify
 Amplify.configure({
   Auth: {
-    region: 'us-east-1',
-    userPoolId: 'us-east-1_21KbTF0ci',
-    userPoolWebClientId: '4qav35669albv2luaomg3hveln'
+    Cognito: {
+      userPoolId: 'us-east-1_21KbTF0ci',
+      userPoolClientId: '4qav35669albv2luaomg3hveln',
+    }
   }
 });
 
