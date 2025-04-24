@@ -1,13 +1,12 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { Amplify } from 'aws-amplify';
 import { signIn, signOut, signUp, getCurrentUser, fetchUserAttributes, fetchAuthSession } from 'aws-amplify/auth';
-
-// Configure Amplify
 Amplify.configure({
   Auth: {
     Cognito: {
       userPoolId: 'us-east-1_21KbTF0ci',
       userPoolClientId: '4qav35669albv2luaomg3hveln',
+      clientSecret: '1pufunfc7t6l76k9t56rm6udu8s53lm0om2km8ul32tq6rqupeii' // Add this line with your actual client secret
     }
   }
 });
