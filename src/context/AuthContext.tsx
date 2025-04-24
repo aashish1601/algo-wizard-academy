@@ -1,8 +1,7 @@
 
 import React, { createContext, useContext, useState } from "react";
-import { fetchAuthSession, signIn, signOut, signUp } from 'aws-amplify/auth';
 import { Amplify } from 'aws-amplify';
-
+import { signIn, signOut, signUp } from 'aws-amplify/auth';
 // Configure Amplify
 Amplify.configure({
   Auth: {
@@ -37,46 +36,48 @@ export const useAuth = () => useContext(AuthContext);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<UserType | null>(null);
 
-  const login = async (email: string, password: string) => {
-    try {
-      const { username, attributes } = await signIn({ username: email, password });
+ const login = async (email: string, password: string) => {
+  try {
+    const { isSignedIn, nextStep } = await signIn({ username: email, password });
+    if (isSignedIn) {
       setUser({
-        username: username || attributes?.preferred_username || email,
-        email: attributes?.email || email
+        username: email.split('@')[0], // temporary username
+        email: email
       });
-    } catch (error) {
-      console.error('Error signing in:', error);
-      throw error;
+      // You might want to fetch the actual user data here
     }
-  };
-
-  const signup = async (email: string, password: string, username: string) => {
-    try {
-      await signUp({
-        username: email,
-        password,
-        options: {
-          userAttributes: {
-            email,
-            preferred_username: username,
-          }
+  } catch (error) {
+    console.error('Error signing in:', error);
+    throw error;
+  }
+};
+const signup = async (email: string, password: string, username: string) => {
+  try {
+    await signUp({
+      username: email,
+      password,
+      options: {
+        userAttributes: {
+          email,
+          preferred_username: username,
         }
-      });
-    } catch (error) {
-      console.error('Error signing up:', error);
-      throw error;
-    }
-  };
+      }
+    });
+  } catch (error) {
+    console.error('Error signing up:', error);
+    throw error;
+  }
+};
 
-  const logout = async () => {
-    try {
-      await signOut();
-      setUser(null);
-    } catch (error) {
-      console.error('Error signing out:', error);
-      throw error;
-    }
-  };
+const logout = async () => {
+  try {
+    await signOut();
+    setUser(null);
+  } catch (error) {
+    console.error('Error signing out:', error);
+    throw error;
+  }
+};
 
   return (
     <AuthContext.Provider value={{ user, login, signup, logout }}>
