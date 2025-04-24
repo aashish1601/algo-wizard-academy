@@ -4,25 +4,58 @@ import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, Dialog
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { LogIn, UserPlus } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
+import { useToast } from "@/hooks/use-toast";
 
 const AuthDialog: React.FC<{ trigger: React.ReactNode }> = ({ trigger }) => {
   const [mode, setMode] = useState<"login" | "signup">("login");
   const [loginForm, setLoginForm] = useState({ email: "", password: "" });
   const [signupForm, setSignupForm] = useState({ username: "", email: "", password: "" });
   const [open, setOpen] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const { login, signup } = useAuth();
+  const { toast } = useToast();
 
-  // Example for UI only — add your backend integration (e.g., Cognito) here
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitted(true);
-    setTimeout(() => setOpen(false), 1000);
+    setIsLoading(true);
+    try {
+      await login(loginForm.email, loginForm.password);
+      toast({
+        title: "Success",
+        description: "You have been logged in successfully.",
+      });
+      setOpen(false);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to login. Please check your credentials.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleSignup = (e: React.FormEvent) => {
+  const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitted(true);
-    setTimeout(() => setOpen(false), 1000);
+    setIsLoading(true);
+    try {
+      await signup(signupForm.email, signupForm.password, signupForm.username);
+      toast({
+        title: "Success",
+        description: "Account created successfully. Please check your email for verification.",
+      });
+      setMode("login");
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to create account. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -90,14 +123,9 @@ const AuthDialog: React.FC<{ trigger: React.ReactNode }> = ({ trigger }) => {
                 }
               />
             </div>
-            <Button type="submit" className="w-full mt-3">
-              Login
+            <Button type="submit" className="w-full mt-3" disabled={isLoading}>
+              {isLoading ? "Loading..." : "Login"}
             </Button>
-            {submitted && (
-              <div className="text-green-600 text-center text-sm py-2">
-                ✅ (Demo) Logged in — integrate Cognito backend!
-              </div>
-            )}
           </form>
         ) : (
           <form onSubmit={handleSignup} className="flex flex-col gap-3">
@@ -150,14 +178,9 @@ const AuthDialog: React.FC<{ trigger: React.ReactNode }> = ({ trigger }) => {
                 autoComplete="new-password"
               />
             </div>
-            <Button type="submit" className="w-full mt-3">
-              Signup
+            <Button type="submit" className="w-full mt-3" disabled={isLoading}>
+              {isLoading ? "Loading..." : "Signup"}
             </Button>
-            {submitted && (
-              <div className="text-green-600 text-center text-sm py-2">
-                🎉 (Demo) Account created — integrate Cognito backend!
-              </div>
-            )}
           </form>
         )}
 
